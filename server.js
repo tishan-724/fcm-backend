@@ -1,29 +1,35 @@
 import express from "express";
 import cors from "cors";
 import admin from "firebase-admin";
-import fs from "fs";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Firebase Service Account
-const serviceAccount = JSON.parse(
-  fs.readFileSync("./serviceAccountKey.json", "utf8")
-);
-
+// Firebase Admin (Render Environment Variable)
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+  )
 });
 
+// Home
 app.get("/", (req, res) => {
   res.send("✅ FCM Backend Running");
 });
 
+// Send Push Notification
 app.post("/send", async (req, res) => {
   try {
     const { token, title, body } = req.body;
+
+    if (!token || !title || !body) {
+      return res.status(400).json({
+        success: false,
+        error: "token, title and body are required"
+      });
+    }
 
     const message = {
       token,
@@ -53,5 +59,5 @@ app.post("/send", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Server Running on Port", PORT);
+  console.log(`✅ Server Running on Port ${PORT}`);
 });
