@@ -16,14 +16,29 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
+// =========================
 // Home
+// =========================
 app.get("/", (req, res) => {
   res.send("✅ FCM Backend Running");
 });
 
+// =========================
+// Deploy Test Route
+// =========================
+app.get("/test-send-all", (req, res) => {
+  res.json({
+    success: true,
+    message: "send-all API Ready 🚀"
+  });
+});
+
+// =========================
 // Send Single Notification
+// =========================
 app.post("/send", async (req, res) => {
   try {
+
     const { token, title, body } = req.body;
 
     if (!token || !title || !body) {
@@ -47,16 +62,20 @@ app.post("/send", async (req, res) => {
     });
 
   } catch (err) {
+
     console.error(err);
 
     res.status(500).json({
       success: false,
       error: err.message
     });
+
   }
 });
 
+// =========================
 // Send Notification To All Users
+// =========================
 app.post("/send-all", async (req, res) => {
   try {
 
@@ -102,6 +121,8 @@ app.post("/send-all", async (req, res) => {
       } catch (err) {
 
         console.log("Failed Token:", token);
+        console.error(err.message);
+
         failed++;
 
       }
@@ -110,6 +131,7 @@ app.post("/send-all", async (req, res) => {
 
     res.json({
       success: true,
+      totalUsers: snapshot.size,
       sent: success,
       failed: failed
     });
